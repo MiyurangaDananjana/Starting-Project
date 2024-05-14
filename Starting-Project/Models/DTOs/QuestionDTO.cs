@@ -2,5 +2,6 @@
 {
     public class QuestionDTO
     {
+        public string Type { get; set; }
     }
 }

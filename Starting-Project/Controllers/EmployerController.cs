@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Starting_Project.Models.DTOs;
 using Starting_Project.Models.Entities;
 using Starting_Project.Services;
 
@@ -15,19 +16,39 @@ namespace Starting_Project.Controllers
             _employerService = employerService;
         }
 
-        [HttpGet]
-        public IActionResult Test(int testId)
+        [HttpPost]
+        public IActionResult AddEmployer(EmployerDTO employerDTO)
         {
-            return Ok(_employerService.Test(testId));
+            string id = Guid.NewGuid().ToString();
+
+            // Map DTO to entity
+            var employer = new Employer
+            {
+                Id = id,
+                FirstName = employerDTO.FirstName,
+                LastName = employerDTO.LastName,
+                Email = employerDTO.Email,
+                Nationality = employerDTO.Nationality,
+                CurrentResidence = employerDTO.CurrentResidence,
+                IdNumber = employerDTO.IdNumber,
+                DateOfBirth = employerDTO.DateOfBirth,
+                Gender = employerDTO.Gender,
+                question = new Question
+                {
+                    Type = employerDTO.question.Type
+                }
+            };
+
+            _employerService.InsertEmployerAsync(employer);
+            return Ok("Succuss !");
+
         }
 
-        [HttpPost]
-        public IActionResult AddEmployer(Employer employer)
+        [HttpGet]
+        public async Task<IActionResult> GetEmployer()
         {
-            employer.Id = Guid.NewGuid().ToString();
-            _employerService.InsertEmployerAsync(employer);
-            return Ok();
-
+            var employers = await _employerService.GetEmployeeDetails();
+            return Ok(employers);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Cosmos;
+using Starting_Project.Models.DTOs;
 using Starting_Project.Models.Entities;
 
 namespace Starting_Project.Services
@@ -17,20 +18,45 @@ namespace Starting_Project.Services
             _databaseId = configuration.GetValue<string>("CosmosDbSettings:DatabaseName"); // Retrieve databaseId from configuration
         }
 
-
-        public void Create()
+        public async Task<IEnumerable<EmployerDTO>> GetEmployeeDetails()
         {
-            throw new System.NotImplementedException();
+            var container = _cosmosClient.GetContainer(_databaseId, _containerName);
+
+            // Execute a SQL query to retrieve all items from the container
+            var query = new QueryDefinition("SELECT * FROM c");
+            var resultSet = container.GetItemQueryIterator<Employer>(query);
+
+            var employeeDetails = new List<EmployerDTO>();
+            while (resultSet.HasMoreResults)
+            {
+                var response = await resultSet.ReadNextAsync();
+                foreach (var item in response)
+                {
+                    // Map Employer entity to EmployerDTO
+                    var employerDTO = MapToDTO(item);
+                    employeeDetails.Add(employerDTO);
+                }
+            }
+            return employeeDetails;
         }
 
-        public void InsertEmployee(string employeeName)
+        private EmployerDTO MapToDTO(Employer employer)
         {
-            throw new NotImplementedException();
-        }
-
-        public string Test(int testId)
-        {
-           return "Test";
+            return new EmployerDTO
+            {
+                FirstName = employer.FirstName,
+                LastName = employer.LastName,
+                Email = employer.Email,
+                Nationality = employer.Nationality,
+                CurrentResidence = employer.CurrentResidence,
+                IdNumber = employer.IdNumber,
+                DateOfBirth = employer.DateOfBirth,
+                Gender = employer.Gender,
+                question = new QuestionDTO
+                {
+                    Type = employer.question.Type
+                }
+            };
         }
 
         public void  InsertEmployerAsync(Employer employer)

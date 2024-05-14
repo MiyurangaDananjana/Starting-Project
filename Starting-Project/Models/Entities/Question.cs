@@ -2,5 +2,6 @@
 {
     public class Question
     {
+        public string Type { get; set; }
     }
 }
